@@ -10,7 +10,7 @@ main:
 # based on: http://www.programminglogic.com/the-sieve-of-eratosthenes-implemented-in-c/
 # mrr  2014-11-22
 
-#define LIMIT 20
+#define LIMIT 200
 
 #int main()
 #{
@@ -104,7 +104,7 @@ notNeg1:
     and $t2,$r0         # t2 = nprimes = 0
 countLoop:
     lw $t3,$t0          # t3 = *numbers
-    beq $t3,
+#    beq $t3,
 
 #    /*count the number of primes*/
 #    nprimes = 0;
