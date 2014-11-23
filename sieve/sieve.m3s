@@ -1,0 +1,123 @@
+#define REG_IOCONTROL 0x00FF00
+#define BIT_SERIAL_OUTPUTREADY 0x01
+#define BIT_SERIAL_OUTPUTFLUSH 0x01
+#define REG_IOBUFFER_1 0x00FF04
+CONST_text: .asciiz "hello world"
+
+main:
+
+# The Sieve of Eratosthenes
+# based on: http://www.programminglogic.com/the-sieve-of-eratosthenes-implemented-in-c/
+# mrr  2014-11-22
+
+#define LIMIT 20
+
+#int main()
+#{
+#    int i,j,numbers[LIMIT],thisnum,nprimes;
+#
+#    /*fill the array with natural numbers*/
+#    for (i=0;i<LIMIT;i++) {
+#        numbers[i]=i+2;
+#    }
+
+    and $a0,$r0
+    ori $a0,LIMIT       # a0=LIMIT
+    and $t0,$r0
+    ori $t0,LIMIT
+    add $t0,$t0         # t0=2*LIMIT (# of bytes in numbers[])
+    sub $sp,$t0         # push space for our stack frame
+    and $t0,$r0
+    or $t0,$sp          # t0 points to numbers[]
+
+    and $t1,$r0         # t1=i=0
+
+initNums:
+    and $t2,$r0
+    or $t2,$t1          # t2=t1=i
+    and $t3,$r0
+    or $t3,$t0          # t3=&numbers
+    and $t4,$r0
+    or $t4,$t1          # t4=i
+    add $t4,$t4         # t4=2*i (offset needed because each array ele takes 2 bytes)
+    add $t3,$t4         # t3=&numbers[i]
+    addi $t2,2          # t2 = i+2
+    sw $t2,$t3          # numbers[i] = i+2
+    addi $t1,1          # i++
+    bgt $a0,$t1         # execute jump below if i < LIMIT
+    j initNums          # next loop iteration
+
+#    /*sieve the non-primes*/
+#    for (i=0;i<LIMIT;i++){
+#        if (numbers[i]!=-1){
+#            thisnum = numbers[i];
+#            j = thisnum + thisnum - 2;
+#            for (; j<LIMIT; j+=thisnum) {
+#                numbers[j]=-1;
+#            }
+#        }
+#    }
+
+    and $t1,$r0         # t1=i=0
+    and $t7,$r0
+    ori $t7,0xffff      # t7=-1
+                        # Note: subi $t7,1 loads -1 instead of 0xffff as displayed
+                        # by emulator.  But aren't those the same?
+limitLoop:
+#  bp
+    and $t3,$r0
+    or $t3,$t0          # t3=&numbers
+    and $t4,$r0
+    or $t4,$t1          # t4=i
+    add $t4,$t4         # t4=2*i (offset needed because each array ele takes 2 bytes)
+    add $t3,$t4         # t3=&numbers[i]
+    lw $t5,$t3          # t5=thisnum=numbers[i]
+    beq $t5,$t7         # if numbers[i] == -1, do the next instruction
+    j notNeg1
+
+    and $t4,$r0
+    or $t4,$t5          # t4=thisnum=numbers[i]
+    add $t4,$t4         # t4=2*numbers[i]
+    subi $t4,2          # t4=j=2*numbers[i]-2
+
+markCompositeLoop:
+#  bp
+    bgt $t4,$a0         # if j > LIMIT then jump to end of loop
+    j endCompositeLoop
+    and $t6,$r0
+    or $t6,$t4          # t6=j
+    add $t6,$t6         # t6=2*j
+    add $t6,$t0         # t6=&numbers[j]
+
+    sw $t7,$t6          # numbers[j] = -1
+    add $t4,$t5        # t4 = j = j+thisnum
+    j markCompositeLoop
+
+endCompositeLoop:
+    addi $t1,1          # t1 = i+1
+    j limitLoop
+
+notNeg1:
+    bp
+
+    and $t1,$r0         # t1 = i = 0
+    and $t2,$r0         # t2 = nprimes = 0
+countLoop:
+    lw $t3,$t0          # t3 = *numbers
+    beq $t3,
+
+#    /*count the number of primes*/
+#    nprimes = 0;
+#    j = 0;
+#    for (i=0;i<LIMIT;i++) {
+#        if (numbers[i]!=-1) {
+#        	nprimes++;
+#        	printf("%d ", numbers[i]);
+#        }
+#    }
+#    printf("\n");
+#    printf("# of primes=%d\n", nprimes);
+#	return 0;
+#}
+
+
