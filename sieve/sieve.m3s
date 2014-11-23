@@ -64,7 +64,6 @@ initNums:
                         # Note: subi $t7,1 loads -1 instead of 0xffff as displayed
                         # by emulator.  But aren't those the same?
 limitLoop:
-#  bp
     and $t3,$r0
     or $t3,$t0          # t3=&numbers
     and $t4,$r0
@@ -73,7 +72,7 @@ limitLoop:
     add $t3,$t4         # t3=&numbers[i]
     lw $t5,$t3          # t5=thisnum=numbers[i]
     beq $t5,$t7         # if numbers[i] == -1, do the next instruction
-    j notNeg1
+    j isNeg1
 
     and $t4,$r0
     or $t4,$t5          # t4=thisnum=numbers[i]
@@ -81,7 +80,6 @@ limitLoop:
     subi $t4,2          # t4=j=2*numbers[i]-2
 
 markCompositeLoop:
-#  bp
     bgt $t4,$a0         # if j > LIMIT then jump to end of loop
     j endCompositeLoop
     and $t6,$r0
@@ -90,21 +88,14 @@ markCompositeLoop:
     add $t6,$t0         # t6=&numbers[j]
 
     sw $t7,$t6          # numbers[j] = -1
-    add $t4,$t5        # t4 = j = j+thisnum
+    add $t4,$t5         # t4 = j = j+thisnum
     j markCompositeLoop
 
 endCompositeLoop:
-    addi $t1,1          # t1 = i+1
+isNeg1:
+    addi $t1,1          # t1 = (i = i+1)
+    blt $t1,$a0         # if t1<LIMIT, then do next instruction
     j limitLoop
-
-notNeg1:
-    bp
-
-    and $t1,$r0         # t1 = i = 0
-    and $t2,$r0         # t2 = nprimes = 0
-countLoop:
-    lw $t3,$t0          # t3 = *numbers
-#    beq $t3,
 
 #    /*count the number of primes*/
 #    nprimes = 0;
@@ -115,6 +106,22 @@ countLoop:
 #        	printf("%d ", numbers[i]);
 #        }
 #    }
+
+    and $t1,$r0         # t1 = i = 0
+    and $t2,$r0         # t2 = nprimes = 0
+countLoop:
+    lw $t3,$t0          # t3 = *numbers
+    bgt $t3,$r0         # if t3>0, then do next instruction
+    addi $t2,1
+    addi $t0,2          # numbers++
+    addi $t1,1
+    blt $t1,$a0         # if t1 < LIMIT then do next instruction
+    j countLoop
+
+# t2 should now have the # of primes < LIMIT (or <=?)
+
+    bp
+
 #    printf("\n");
 #    printf("# of primes=%d\n", nprimes);
 #	return 0;
